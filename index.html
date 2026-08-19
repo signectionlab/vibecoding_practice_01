@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CODE RUNNER — 바이러스 러너</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="code-rain" aria-hidden="true"></div>
+
+  <div class="audio-controls" id="audio-controls">
+    <button type="button" id="btn-mute" class="btn-mute" aria-label="음소거">🔊</button>
+    <label class="volume-wrap" for="volume-slider">
+      <span class="volume-label">VOL</span>
+      <input type="range" id="volume-slider" min="0" max="100" value="70" aria-label="음량 조절">
+    </label>
+  </div>
+
+  <!-- 시작 화면 -->
+  <section id="screen-start" class="screen active">
+    <div class="screen-panel">
+      <p class="badge">CODE WORLD</p>
+      <h1 class="title">
+        <span class="title-main">CODE RUNNER</span>
+        <span class="title-sub">바이러스 러너</span>
+      </h1>
+      <p class="desc">사이버 세계를 질주하며 바이러스를 피하고 백신을 모으세요!</p>
+      <button class="btn btn-primary" id="btn-start">시작하기</button>
+      <p class="hint">← → 또는 A D 키로 레인 이동</p>
+    </div>
+  </section>
+
+  <!-- 캐릭터 선택 -->
+  <section id="screen-select" class="screen">
+    <div class="screen-panel">
+      <h2 class="section-title">SELECT CHARACTER</h2>
+      <p class="section-desc">플레이할 캐릭터를 선택하세요</p>
+
+      <div class="character-carousel">
+        <button class="carousel-btn" id="char-prev" aria-label="이전 캐릭터">◀</button>
+
+        <div class="character-card" id="character-preview">
+          <img class="character-sprite" id="preview-sprite" src="assets/sprites/bia/front.png" alt="삐아">
+          <h3 id="char-name">삐아</h3>
+          <p id="char-desc">AI 밴드를 쓴 노란 병아리. 균형 잡힌 CODE RUNNER!</p>
+          <div class="char-stats">
+            <span>속도 ★★★</span>
+            <span>이동 ★★★</span>
+            <span>체력 ★★★</span>
+          </div>
+        </div>
+
+        <button class="carousel-btn" id="char-next" aria-label="다음 캐릭터">▶</button>
+      </div>
+
+      <div class="char-dots" id="char-dots"></div>
+      <button class="btn btn-primary" id="btn-select">SELECT</button>
+      <button class="btn btn-ghost" id="btn-back-start">돌아가기</button>
+    </div>
+  </section>
+
+  <!-- 게임 화면 -->
+  <section id="screen-game" class="screen">
+    <div class="game-wrap">
+      <header class="hud">
+        <div class="hud-left">
+          <div class="hud-row"><span class="label">SCORE</span> <span id="score">0</span></div>
+          <div class="hud-row"><span class="label">HIGH</span> <span id="high-score">0</span></div>
+        </div>
+        <div class="hud-center">
+          <div class="lives" id="lives" aria-label="남은 목숨"></div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-row"><span class="label">TIME</span> <span id="time">0s</span></div>
+          <div class="hud-row"><span class="label">💉</span> <span id="vaccines">0</span></div>
+        </div>
+      </header>
+
+      <div class="game-area" id="game-area" tabindex="0" aria-label="게임 영역">
+        <div class="lane-markers" aria-hidden="true">
+          <span>LEFT</span>
+          <span>CENTER</span>
+          <span>RIGHT</span>
+        </div>
+        <div class="lane-lines" aria-hidden="true"></div>
+        <div id="objects-layer"></div>
+        <div id="player" class="player">
+          <img class="player-sprite" id="player-sprite" src="" alt="플레이어">
+        </div>
+        <div id="combo-popup" class="combo-popup hidden"></div>
+        <div id="damage-flash" class="damage-flash hidden"></div>
+      </div>
+
+      <footer class="game-footer">
+        <span>← → / A D : 레인 이동</span>
+        <div class="game-footer-right">
+          <span id="speed-label">EASY</span>
+          <button class="btn-quit" id="btn-quit" type="button">종료</button>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <!-- 게임 오버 -->
+  <section id="screen-over" class="screen">
+    <div class="screen-panel game-over-panel">
+      <h2 class="game-over-title">GAME OVER</h2>
+      <div class="result-grid">
+        <div class="result-item">
+          <span class="label">SCORE</span>
+          <span class="value" id="final-score">0</span>
+        </div>
+        <div class="result-item">
+          <span class="label">DISTANCE</span>
+          <span class="value" id="final-distance">0m</span>
+        </div>
+        <div class="result-item">
+          <span class="label">TIME</span>
+          <span class="value" id="final-time">0s</span>
+        </div>
+        <div class="result-item">
+          <span class="label">VACCINE</span>
+          <span class="value" id="final-vaccines">0</span>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" id="btn-restart">다시 시작</button>
+        <button class="btn btn-ghost" id="btn-char-select">캐릭터 선택</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

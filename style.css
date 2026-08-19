@@ -1,0 +1,641 @@
+/* ===== CODE RUNNER — 사이버 러너 스타일 ===== */
+
+:root {
+  --bg: #050814;
+  --bg-panel: rgba(8, 14, 32, 0.92);
+  --neon-blue: #00d4ff;
+  --neon-green: #39ff14;
+  --neon-purple: #b44dff;
+  --neon-pink: #ff2d95;
+  --text: #e8f4ff;
+  --text-muted: #7a9bb8;
+  --danger: #ff3b5c;
+  --vaccine: #00ffaa;
+  --border: rgba(0, 212, 255, 0.25);
+  --lane-width: 33.333%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 오디오 컨트롤 */
+.audio-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(8, 14, 32, 0.88);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+}
+
+.btn-mute {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(0, 212, 255, 0.08);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-mute:hover {
+  background: rgba(0, 212, 255, 0.16);
+  transform: scale(1.05);
+}
+
+.btn-mute.is-muted {
+  background: rgba(255, 59, 92, 0.12);
+  border-color: rgba(255, 59, 92, 0.35);
+}
+
+.volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.volume-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+#volume-slider {
+  width: 88px;
+  height: 4px;
+  accent-color: var(--neon-blue);
+  cursor: pointer;
+}
+
+@media (max-width: 380px) {
+  .audio-controls {
+    top: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  #volume-slider {
+    width: 64px;
+  }
+}
+
+/* 배경 코드 비 */
+.code-rain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(5, 8, 20, 0.3), rgba(5, 8, 20, 0.95)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(0, 212, 255, 0.03) 40px,
+      rgba(0, 212, 255, 0.03) 41px
+    );
+  overflow: hidden;
+}
+
+.code-rain::before,
+.code-rain::after {
+  content: "01010101\A if (virus) RUN();\A while(true) run();\A const player = new Player();\A > SYSTEM ONLINE\A ACCESS GRANTED\A ERROR 404\A AI_CORE.exe";
+  white-space: pre;
+  position: absolute;
+  left: 5%;
+  top: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  line-height: 1.8;
+  color: rgba(57, 255, 20, 0.12);
+  animation: code-scroll 18s linear infinite;
+}
+
+.code-rain::after {
+  left: 55%;
+  color: rgba(0, 212, 255, 0.1);
+  animation-duration: 24s;
+  animation-direction: reverse;
+}
+
+@keyframes code-scroll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+/* 화면 전환 */
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100vw);
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+.screen.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen-panel {
+  width: 100%;
+  padding: 32px 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-panel);
+  box-shadow:
+    0 0 40px rgba(0, 212, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 6px 14px;
+  border: 1px solid var(--neon-purple);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--neon-purple);
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0 0 12px;
+}
+
+.title-main {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-green), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.desc {
+  margin: 0 0 28px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1.3rem;
+  color: var(--neon-blue);
+}
+
+.section-desc {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin: 16px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* 버튼 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  color: #fff;
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.35);
+}
+
+.btn-ghost {
+  margin-top: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 캐릭터 스프라이트 */
+.character-sprite,
+.player-sprite {
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.player-sprite {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+}
+
+/* 캐릭터 선택 */
+.character-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--neon-blue);
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.character-card {
+  flex: 1;
+  max-width: 260px;
+  padding: 20px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(0, 212, 255, 0.04);
+}
+
+.character-card .character-sprite {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 12px;
+}
+
+.character-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+}
+
+.character-card p {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.char-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--neon-green);
+}
+
+.char-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.char-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.char-dots span.active {
+  background: var(--neon-blue);
+  box-shadow: 0 0 8px var(--neon-blue);
+}
+
+/* ===== 게임 화면 ===== */
+#screen-game {
+  padding: 12px;
+  min-height: 100vh;
+}
+
+#screen-game.active {
+  align-items: stretch;
+}
+
+.game-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  min-height: calc(100vh - 24px);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-panel);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+}
+
+.hud-left { text-align: left; }
+.hud-right { text-align: right; }
+
+.hud-row {
+  line-height: 1.5;
+}
+
+.hud .label {
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.lives {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.game-area {
+  position: relative;
+  flex: 1;
+  margin: 10px 0;
+  min-height: 420px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(0, 212, 255, 0.06) 0%, transparent 30%),
+    linear-gradient(180deg, #070d1f 0%, #0a1228 100%);
+}
+
+.lane-lines {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent calc(33.333% - 1px), rgba(0, 212, 255, 0.15) calc(33.333% - 1px), rgba(0, 212, 255, 0.15) calc(33.333% + 1px), transparent calc(33.333% + 1px)),
+    linear-gradient(90deg, transparent calc(66.666% - 1px), rgba(0, 212, 255, 0.15) calc(66.666% - 1px), rgba(0, 212, 255, 0.15) calc(66.666% + 1px), transparent calc(66.666% + 1px));
+  pointer-events: none;
+}
+
+.lane-markers {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  color: rgba(122, 155, 184, 0.5);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#objects-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.game-object {
+  position: absolute;
+  width: calc(var(--lane-width) - 20px);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  transition: opacity 0.15s;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.game-object.virus {
+  color: var(--danger);
+}
+
+.game-object.vaccine {
+  color: var(--vaccine);
+  font-size: 1.6rem;
+}
+
+.game-object.passed {
+  opacity: 0.3;
+}
+
+.game-area:focus {
+  outline: none;
+}
+
+#player {
+  position: absolute;
+  bottom: 36px;
+  left: 33.333%;
+  width: var(--lane-width);
+  transition: left 0.15s ease-out;
+  z-index: 5;
+}
+
+#player.invincible .player-sprite {
+  animation: blink 0.2s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.35; }
+}
+
+.combo-popup {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 18px;
+  border: 1px solid var(--neon-green);
+  border-radius: 10px;
+  background: rgba(57, 255, 20, 0.12);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  color: var(--neon-green);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.combo-popup.hidden,
+.damage-flash.hidden {
+  display: none;
+}
+
+.damage-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 59, 92, 0.25);
+  z-index: 8;
+  pointer-events: none;
+  animation: flash 0.3s ease-out;
+}
+
+@keyframes flash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.game-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.game-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-quit {
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 59, 92, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 59, 92, 0.12);
+  color: var(--danger);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-quit:hover {
+  background: rgba(255, 59, 92, 0.22);
+  transform: translateY(-1px);
+}
+
+#speed-label {
+  color: var(--neon-purple);
+}
+
+/* 게임 오버 */
+.game-over-title {
+  margin: 0 0 24px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 2rem;
+  color: var(--danger);
+  text-shadow: 0 0 20px rgba(255, 59, 92, 0.5);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.result-item {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.result-item .label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.result-item .value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1.4rem;
+  color: var(--neon-blue);
+}
+
+@media (max-width: 380px) {
+  .hud {
+    font-size: 0.7rem;
+    padding: 10px;
+  }
+
+  .game-area {
+    min-height: 360px;
+  }
+
+  .player-sprite {
+    width: 68px;
+    height: 68px;
+  }
+}
