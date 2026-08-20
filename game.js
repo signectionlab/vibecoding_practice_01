@@ -582,27 +582,48 @@ function gameLoop(timestamp) {
   animationId = requestAnimationFrame(gameLoop);
 }
 
+function resolveKeyAction(event) {
+  const byCode = {
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    ArrowUp: "up",
+    ArrowDown: "down",
+    KeyA: "left",
+    KeyD: "right",
+    KeyW: "up",
+    KeyS: "down",
+  };
+
+  if (byCode[event.code]) return byCode[event.code];
+
+  const byKey = {
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    ArrowUp: "up",
+    ArrowDown: "down",
+    a: "left",
+    d: "right",
+    w: "up",
+    s: "down",
+  };
+
+  return byKey[event.key] || null;
+}
+
 // ===== 입력 =====
 document.addEventListener("keydown", (e) => {
   if (!isGameActive()) return;
 
-  if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-    e.preventDefault();
-    handleGameInput("left");
-  } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-    e.preventDefault();
-    handleGameInput("right");
-  } else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-    e.preventDefault();
-    handleGameInput("up");
-  } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-    e.preventDefault();
-    handleGameInput("down");
-  }
+  const action = resolveKeyAction(e);
+  if (!action) return;
+
+  e.preventDefault();
+  handleGameInput(action);
 });
 
 document.querySelectorAll(".touch-btn").forEach((btn) => {
   btn.addEventListener("pointerdown", (e) => {
+    if (!isGameActive()) return;
     e.preventDefault();
     handleGameInput(btn.dataset.action);
   });
