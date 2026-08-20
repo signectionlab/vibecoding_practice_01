@@ -50,6 +50,9 @@ const HIT_ANIM_MS = 700;
 const RECOVER_ANIM_MS = 900;
 const RUN_FRAME_MS = 120;
 const PLAYER_HIT_Y = 0.78; // 충돌 판정 Y 비율 (게임 영역 기준)
+const JUMP_MS = 650;
+const SLIDE_MS = 650;
+const ACTION_COOLDOWN_MS = 200;
 const COLLISION_THRESHOLD = 48;
 
 // ===== DOM 요소 =====
@@ -58,6 +61,7 @@ const screens = {
   select: document.getElementById("screen-select"),
   game: document.getElementById("screen-game"),
   over: document.getElementById("screen-over"),
+  settings: document.getElementById("screen-settings"),
 };
 
 const ui = {
@@ -146,7 +150,17 @@ function updatePlayerAnimation(timestamp) {
 function showScreen(name) {
   Object.values(screens).forEach((el) => el.classList.remove("active"));
   screens[name].classList.add("active");
-  syncBgmForScreen(name);
+
+  const tabPlay = document.getElementById("tab-play");
+  const tabSettings = document.getElementById("tab-settings");
+  if (tabPlay && tabSettings) {
+    tabPlay.classList.toggle("active", name === "start");
+    tabSettings.classList.toggle("active", name === "settings");
+  }
+
+  if (name !== "settings") {
+    syncBgmForScreen(name);
+  }
 }
 
 // ===== 캐릭터 선택 UI =====
@@ -226,7 +240,7 @@ function startGame() {
   ui.playerSprite.alt = char.name;
   ui.objectsLayer.innerHTML = "";
   ui.comboPopup.classList.add("hidden");
-  ui.player.classList.remove("invincible");
+  ui.player.classList.remove("invincible", "jumping", "sliding");
 
   gameState = {
     running: true,
@@ -240,6 +254,9 @@ function startGame() {
     invincibleUntil: 0,
     playerState: "run",
     playerStateUntil: 0,
+    playerAction: "ground",
+    actionUntil: 0,
+    actionCooldownUntil: 0,
     objects: [],
     lastSpawn: 0,
     lastScoreTick: 0,
@@ -286,13 +303,13 @@ function stopGame() {
   ui.objectsLayer.innerHTML = "";
   ui.comboPopup.classList.add("hidden");
   ui.damageFlash.classList.add("hidden");
-  ui.player.classList.remove("invincible");
+  ui.player.classList.remove("invincible", "jumping", "sliding");
   gameState = null;
 
   showScreen("start");
 }
 
-// ===== 플레이어 이동 =====
+// ===== 플레이어 이동 / 액션 =====
 function moveLane(dir) {
   if (!gameState?.running) return;
 
@@ -301,6 +318,55 @@ function moveLane(dir) {
 
   gameState.lane = next;
   setPlayerLane(next);
+}
+
+function resetPlayerAction() {
+  if (!gameState) return;
+  gameState.playerAction = "ground";
+  gameState.actionUntil = 0;
+  ui.player.classList.remove("jumping", "sliding");
+}
+
+function jump() {
+  if (!gameState?.running) return;
+  const now = performance.now();
+  if (gameState.playerAction !== "ground") return;
+  if (now < gameState.actionCooldownUntil) return;
+
+  gameState.playerAction = "jump";
+  gameState.actionUntil = now + JUMP_MS;
+  gameState.actionCooldownUntil = now + ACTION_COOLDOWN_MS;
+  ui.player.classList.remove("sliding");
+  ui.player.classList.add("jumping");
+}
+
+function slide() {
+  if (!gameState?.running) return;
+  const now = performance.now();
+  if (gameState.playerAction !== "ground") return;
+  if (now < gameState.actionCooldownUntil) return;
+
+  gameState.playerAction = "slide";
+  gameState.actionUntil = now + SLIDE_MS;
+  gameState.actionCooldownUntil = now + ACTION_COOLDOWN_MS;
+  ui.player.classList.remove("jumping");
+  ui.player.classList.add("sliding");
+}
+
+function updatePlayerAction(timestamp) {
+  if (!gameState?.running) return;
+  if (gameState.actionUntil && timestamp >= gameState.actionUntil) {
+    resetPlayerAction();
+  }
+}
+
+function handleGameInput(action) {
+  if (!isGameActive()) return;
+
+  if (action === "left") moveLane(-1);
+  else if (action === "right") moveLane(1);
+  else if (action === "up") jump();
+  else if (action === "down") slide();
 }
 
 // ===== 충돌 / 아이템 처리 =====
@@ -348,6 +414,18 @@ function checkCollisions(obj, playerY) {
   if (obj.hit) return;
   if (Math.abs(obj.y - playerY) > COLLISION_THRESHOLD) return;
   if (obj.lane !== gameState.lane) return;
+
+  if (obj.type === "virus" && (gameState.playerAction === "jump" || gameState.playerAction === "slide")) {
+    obj.passed = true;
+    obj.el.classList.add("passed");
+    gameState.combo += 1;
+    gameState.score += 15 + gameState.combo * 3;
+    ui.score.textContent = gameState.score;
+    if (gameState.combo >= 2) {
+      showCombo(`DODGE! COMBO x${gameState.combo}`);
+    }
+    return;
+  }
 
   obj.hit = true;
   obj.el.style.opacity = "0.4";
@@ -427,6 +505,7 @@ function gameLoop(timestamp) {
   });
 
   updatePlayerAnimation(timestamp);
+  updatePlayerAction(timestamp);
 
   animationId = requestAnimationFrame(gameLoop);
 }
@@ -437,11 +516,24 @@ document.addEventListener("keydown", (e) => {
 
   if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
     e.preventDefault();
-    moveLane(-1);
+    handleGameInput("left");
   } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
     e.preventDefault();
-    moveLane(1);
+    handleGameInput("right");
+  } else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+    e.preventDefault();
+    handleGameInput("up");
+  } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+    e.preventDefault();
+    handleGameInput("down");
   }
+});
+
+document.querySelectorAll(".touch-btn").forEach((btn) => {
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    handleGameInput(btn.dataset.action);
+  });
 });
 
 ui.gameArea.addEventListener("click", () => {
@@ -450,15 +542,24 @@ ui.gameArea.addEventListener("click", () => {
 
 // 터치 스와이프 (모바일)
 let touchStartX = 0;
+let touchStartY = 0;
 ui.gameArea.addEventListener("touchstart", (e) => {
   touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
 }, { passive: true });
 
 ui.gameArea.addEventListener("touchend", (e) => {
   if (!gameState?.running) return;
-  const diff = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(diff) < 30) return;
-  moveLane(diff > 0 ? 1 : -1);
+  const diffX = e.changedTouches[0].clientX - touchStartX;
+  const diffY = e.changedTouches[0].clientY - touchStartY;
+
+  if (Math.abs(diffX) < 30 && Math.abs(diffY) < 30) return;
+
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    handleGameInput(diffX > 0 ? "right" : "left");
+  } else {
+    handleGameInput(diffY > 0 ? "down" : "up");
+  }
 }, { passive: true });
 
 // ===== 버튼 이벤트 =====
@@ -466,6 +567,8 @@ document.getElementById("btn-start").addEventListener("click", () => {
   renderCharacterSelect();
   showScreen("select");
 });
+
+document.getElementById("tab-play")?.addEventListener("click", () => showScreen("start"));
 
 document.getElementById("char-prev").addEventListener("click", () => nextCharacter(-1));
 document.getElementById("char-next").addEventListener("click", () => nextCharacter(1));
@@ -477,6 +580,32 @@ document.getElementById("btn-char-select").addEventListener("click", () => {
   renderCharacterSelect();
   showScreen("select");
 });
+
+function openSettingsScreen() {
+  openSettingsPanel();
+  showScreen("settings");
+}
+
+function closeSettingsScreen() {
+  stopBgmPreview();
+  syncDraftFromSaved();
+  showScreen("start");
+}
+
+function saveSettingsScreen() {
+  commitAudioSettings();
+  const msg = document.getElementById("settings-save-msg");
+  if (msg) {
+    msg.classList.remove("hidden");
+    clearTimeout(saveSettingsScreen._timer);
+    saveSettingsScreen._timer = setTimeout(() => msg.classList.add("hidden"), 1800);
+  }
+}
+
+document.getElementById("btn-settings-gear")?.addEventListener("click", openSettingsScreen);
+document.getElementById("tab-settings")?.addEventListener("click", openSettingsScreen);
+document.getElementById("btn-settings-back")?.addEventListener("click", closeSettingsScreen);
+document.getElementById("btn-settings-save")?.addEventListener("click", saveSettingsScreen);
 
 // 초기화
 preloadSprites();

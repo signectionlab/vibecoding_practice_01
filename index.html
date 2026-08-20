@@ -12,13 +12,7 @@
 <body>
   <div class="code-rain" aria-hidden="true"></div>
 
-  <div class="audio-controls" id="audio-controls">
-    <button type="button" id="btn-mute" class="btn-mute" aria-label="음소거">🔊</button>
-    <label class="volume-wrap" for="volume-slider">
-      <span class="volume-label">VOL</span>
-      <input type="range" id="volume-slider" min="0" max="100" value="70" aria-label="음량 조절">
-    </label>
-  </div>
+  <button type="button" id="btn-settings-gear" class="btn-settings-gear" aria-label="설정 열기">⚙</button>
 
   <!-- 시작 화면 -->
   <section id="screen-start" class="screen active">
@@ -29,8 +23,12 @@
         <span class="title-sub">바이러스 러너</span>
       </h1>
       <p class="desc">사이버 세계를 질주하며 바이러스를 피하고 백신을 모으세요!</p>
+      <nav class="main-tabs" aria-label="메인 메뉴">
+        <button class="main-tab active" id="tab-play" type="button">게임</button>
+        <button class="main-tab" id="tab-settings" type="button">설정</button>
+      </nav>
       <button class="btn btn-primary" id="btn-start">시작하기</button>
-      <p class="hint">← → 또는 A D 키로 레인 이동</p>
+      <p class="hint">← → / A D : 레인 · ↑ ↓ / W S : 점프 · 슬라이드</p>
     </div>
   </section>
 
@@ -93,15 +91,72 @@
         </div>
         <div id="combo-popup" class="combo-popup hidden"></div>
         <div id="damage-flash" class="damage-flash hidden"></div>
+
+        <div class="touch-controls" aria-label="키보드 조작 버튼">
+          <button type="button" class="touch-btn" data-action="left" aria-label="왼쪽 (A)">A</button>
+          <button type="button" class="touch-btn" data-action="up" aria-label="점프 (W)">W</button>
+          <button type="button" class="touch-btn" data-action="right" aria-label="오른쪽 (D)">D</button>
+          <button type="button" class="touch-btn" data-action="down" aria-label="슬라이드 (S)">S</button>
+        </div>
       </div>
 
       <footer class="game-footer">
-        <span>← → / A D : 레인 이동</span>
+        <span>← → / A D : 레인 · ↑ ↓ / W S : 점프 · 슬라이드</span>
         <div class="game-footer-right">
           <span id="speed-label">EASY</span>
           <button class="btn-quit" id="btn-quit" type="button">종료</button>
         </div>
       </footer>
+    </div>
+  </section>
+
+  <!-- 설정 -->
+  <section id="screen-settings" class="screen">
+    <div class="screen-panel settings-panel">
+      <h2 class="section-title">SETTINGS</h2>
+      <p class="section-desc">게임 사운드와 조작을 설정하세요</p>
+
+      <div class="settings-group">
+        <h3 class="settings-label">음량</h3>
+        <div class="settings-row">
+          <button type="button" id="btn-mute" class="btn-mute" aria-label="음소거">🔊</button>
+          <label class="volume-wrap" for="volume-slider">
+            <span class="volume-label">VOL</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="70" aria-label="음량 조절">
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">배경음악 — 로비</h3>
+        <div class="option-group" id="bgm-lobby-options" role="radiogroup" aria-label="로비 배경음악"></div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">배경음악 — 게임</h3>
+        <div class="option-group" id="bgm-game-options" role="radiogroup" aria-label="게임 배경음악"></div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">효과음 — 충돌</h3>
+        <div class="checkbox-group" id="sfx-hit-options" role="group" aria-label="충돌 효과음"></div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">효과음 — 회복</h3>
+        <div class="checkbox-group" id="sfx-heal-options" role="group" aria-label="회복 효과음"></div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">효과음 — 점수</h3>
+        <div class="checkbox-group" id="sfx-data-options" role="group" aria-label="점수 효과음"></div>
+      </div>
+
+      <p class="settings-save-msg hidden" id="settings-save-msg">설정이 저장되었습니다.</p>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="btn-settings-save" type="button">설정 저장하기</button>
+        <button class="btn btn-ghost" id="btn-settings-back" type="button">돌아가기</button>
+      </div>
     </div>
   </section>
 

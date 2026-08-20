@@ -37,21 +37,37 @@ body {
   justify-content: center;
 }
 
-/* 오디오 컨트롤 */
-.audio-controls {
+/* 설정 버튼 (우측 상단) */
+.btn-settings-gear {
   position: fixed;
   top: 16px;
   right: 16px;
-  z-index: 20;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(8, 14, 32, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--neon-blue);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.12);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-settings-gear:hover {
+  background: rgba(0, 212, 255, 0.14);
+  transform: rotate(45deg) scale(1.05);
+}
+
+/* 설정 화면 내 음량 */
+.settings-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(8, 14, 32, 0.88);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+  justify-content: center;
+  gap: 12px;
 }
 
 .btn-mute {
@@ -90,22 +106,249 @@ body {
 }
 
 #volume-slider {
-  width: 88px;
+  width: 120px;
   height: 4px;
   accent-color: var(--neon-blue);
   cursor: pointer;
 }
 
+/* 메인 탭 */
+.main-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.main-tab {
+  min-width: 88px;
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.main-tab.active {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+/* 설정 패널 */
+#screen-settings {
+  min-height: 0;
+}
+
+#screen-settings.active {
+  align-items: flex-start;
+  justify-content: flex-start;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 72px;
+  padding-bottom: 32px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 212, 255, 0.45) rgba(8, 14, 32, 0.6);
+}
+
+#screen-settings.active::-webkit-scrollbar {
+  width: 6px;
+}
+
+#screen-settings.active::-webkit-scrollbar-track {
+  background: rgba(8, 14, 32, 0.6);
+  border-radius: 999px;
+}
+
+#screen-settings.active::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.45);
+  border-radius: 999px;
+}
+
+#screen-settings.active::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.65);
+}
+
+.settings-panel {
+  text-align: left;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.settings-group {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.settings-label {
+  margin: 0 0 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--neon-green);
+  letter-spacing: 0.04em;
+}
+
+.option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-btn {
+  flex: 1;
+  min-width: 90px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 212, 255, 0.04);
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.option-preview-tag {
+  font-size: 0.58rem;
+  color: var(--neon-green);
+  letter-spacing: 0.04em;
+}
+
+.option-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--text);
+}
+
+.option-btn.active {
+  background: rgba(0, 212, 255, 0.16);
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+}
+
+/* 효과음 체크박스 */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sfx-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 212, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sfx-check-label:hover {
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.sfx-check {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.sfx-check-box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0, 212, 255, 0.45);
+  border-radius: 4px;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.sfx-check:checked + .sfx-check-box {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.25);
+}
+
+.sfx-check:checked + .sfx-check-box::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--neon-blue);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sfx-check-text {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sfx-check:checked ~ .sfx-check-text {
+  color: var(--neon-blue);
+}
+
+.sfx-check-label:has(.sfx-check:checked) {
+  border-color: var(--neon-blue);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.settings-save-msg {
+  margin: 0 0 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  color: var(--neon-green);
+  text-align: center;
+}
+
+.settings-save-msg.hidden {
+  display: none;
+}
+
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.settings-actions .btn {
+  width: 100%;
+  min-width: 0;
+}
+
 @media (max-width: 380px) {
-  .audio-controls {
+  .btn-settings-gear {
     top: 10px;
     right: 10px;
-    padding: 6px 10px;
-    gap: 8px;
+    width: 40px;
+    height: 40px;
   }
 
   #volume-slider {
-    width: 64px;
+    width: 96px;
   }
 }
 
@@ -509,6 +752,22 @@ body {
   animation: blink 0.2s step-end infinite;
 }
 
+#player.jumping {
+  transform: translateY(-42px);
+  transition: transform 0.18s ease-out;
+}
+
+#player.sliding {
+  transform: translateY(18px) scaleY(0.72);
+  transform-origin: bottom center;
+  transition: transform 0.18s ease-out;
+}
+
+#player.jumping .player-sprite,
+#player.sliding .player-sprite {
+  filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.45));
+}
+
 @keyframes blink {
   50% { opacity: 0.35; }
 }
@@ -546,6 +805,59 @@ body {
 @keyframes flash {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+
+/* 화면 조작 버튼 */
+.touch-controls {
+  position: absolute;
+  left: 10px;
+  bottom: 52px;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 6px;
+  z-index: 6;
+}
+
+.touch-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(8, 14, 32, 0.72);
+  color: var(--neon-blue);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.touch-btn:active {
+  background: rgba(0, 212, 255, 0.22);
+  transform: scale(0.94);
+}
+
+.touch-btn[data-action="up"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.touch-btn[data-action="left"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.touch-btn[data-action="right"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.touch-btn[data-action="down"] {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .game-footer {
@@ -637,5 +949,17 @@ body {
   .player-sprite {
     width: 68px;
     height: 68px;
+  }
+
+  .touch-controls {
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(2, 38px);
+    bottom: 46px;
+  }
+
+  .touch-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 0.75rem;
   }
 }
