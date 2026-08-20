@@ -8,8 +8,17 @@ const CHARACTERS = [
   {
     id: "bia",
     name: "삐아",
-    desc: "AI 밴드를 쓴 노란 병아리. 균형 잡힌 CODE RUNNER!",
-    stats: ["속도 ★★★", "이동 ★★★", "체력 ★★★"],
+    desc: "AI 밴드를 쓴 노란 병아리. 민첩하게 바이러스를 피하는 타입!",
+    maxLives: 3,
+    verticalHitRange: 30,
+    spriteSize: 80,
+    previewSize: 112,
+    traits: {
+      hitboxLabel: "좁음",
+      hitboxSize: 32,
+      hitboxDesc: "세로 피격 판정이 좁아 회피에 유리",
+      hpDesc: "최대 체력 3 — 짧고 빠른 플레이",
+    },
     sprites: {
       front: "assets/sprites/bia/front.png",
       run: [
@@ -26,8 +35,17 @@ const CHARACTERS = [
   {
     id: "or",
     name: "오르",
-    desc: "AI 밴드를 쓴 하얀 곰. 느리지만 단단한 CODE RUNNER!",
-    stats: ["속도 ★★", "이동 ★★★★", "체력 ★★★★"],
+    desc: "AI 밴드를 쓴 하얀 곰. 단단한 체력으로 오래 버티는 타입!",
+    maxLives: 5,
+    verticalHitRange: 78,
+    spriteSize: 104,
+    previewSize: 142,
+    traits: {
+      hitboxLabel: "넓음",
+      hitboxSize: 88,
+      hitboxDesc: "세로 피격 판정이 넓어 맞기 쉬움",
+      hpDesc: "최대 체력 5 — 안정적인 생존 플레이",
+    },
     sprites: {
       front: "assets/sprites/or/front.png",
       run: [
@@ -44,7 +62,7 @@ const CHARACTERS = [
 ];
 
 // ===== 게임 설정 =====
-const MAX_LIVES = 5;
+const MAX_LIVES_CAP = 5;
 const INVINCIBLE_MS = 1500;
 const HIT_ANIM_MS = 700;
 const RECOVER_ANIM_MS = 900;
@@ -53,7 +71,7 @@ const PLAYER_HIT_Y = 0.78; // 충돌 판정 Y 비율 (게임 영역 기준)
 const JUMP_MS = 650;
 const SLIDE_MS = 650;
 const ACTION_COOLDOWN_MS = 200;
-const COLLISION_THRESHOLD = 48;
+const DEFAULT_VERTICAL_HIT_RANGE = 48;
 
 // ===== DOM 요소 =====
 const screens = {
@@ -163,6 +181,58 @@ function showScreen(name) {
   }
 }
 
+function getCharacterMaxLives(char = getSelectedCharacter()) {
+  return char.maxLives;
+}
+
+function getCharacterVerticalHitRange(char = getSelectedCharacter()) {
+  return char.verticalHitRange ?? DEFAULT_VERTICAL_HIT_RANGE;
+}
+
+function applyCharacterVisuals(char) {
+  const isCompact = window.matchMedia("(max-width: 380px)").matches;
+  const scale = isCompact ? 0.85 : 1;
+  const spriteSize = Math.round(char.spriteSize * scale);
+  const previewSize = Math.round(char.previewSize * scale);
+
+  ui.player.dataset.charId = char.id;
+  ui.player.style.setProperty("--sprite-size", `${spriteSize}px`);
+  ui.previewSprite.style.width = `${previewSize}px`;
+  ui.previewSprite.style.height = `${previewSize}px`;
+}
+
+function renderCharacterTraits(char) {
+  const traitsEl = document.getElementById("char-traits");
+  if (!traitsEl) return;
+
+  const hearts = "❤️".repeat(char.maxLives);
+  const emptyHearts = "🤍".repeat(MAX_LIVES_CAP - char.maxLives);
+  const hitboxClass = char.verticalHitRange <= DEFAULT_VERTICAL_HIT_RANGE ? "small" : "large";
+
+  traitsEl.innerHTML = `
+    <div class="trait-card">
+      <span class="trait-icon">❤️</span>
+      <div class="trait-body">
+        <span class="trait-title">최대 체력</span>
+        <span class="trait-hearts" aria-label="최대 체력 ${char.maxLives}">${hearts}${emptyHearts}</span>
+        <span class="trait-desc">${char.traits.hpDesc}</span>
+      </div>
+      <span class="trait-badge">${char.maxLives} HP</span>
+    </div>
+    <div class="trait-card trait-card-hitbox">
+      <span class="trait-icon">↕️</span>
+      <div class="trait-body">
+        <span class="trait-title">세로 피격 범위</span>
+        <span class="trait-desc">${char.traits.hitboxDesc}</span>
+      </div>
+      <div class="trait-meter-vertical" aria-hidden="true">
+        <span class="trait-meter-fill ${hitboxClass}" style="height: ${char.traits.hitboxSize}%"></span>
+      </div>
+      <span class="trait-badge ${hitboxClass}">${char.traits.hitboxLabel}</span>
+    </div>
+  `;
+}
+
 // ===== 캐릭터 선택 UI =====
 function renderCharacterSelect() {
   const char = getSelectedCharacter();
@@ -171,9 +241,8 @@ function renderCharacterSelect() {
   ui.previewSprite.alt = char.name;
   ui.charName.textContent = char.name;
   ui.charDesc.textContent = char.desc;
-
-  const statsEl = document.querySelector(".char-stats");
-  statsEl.innerHTML = char.stats.map((s) => `<span>${s}</span>`).join("");
+  applyCharacterVisuals(char);
+  renderCharacterTraits(char);
 
   ui.charDots.innerHTML = CHARACTERS.map((_, i) =>
     `<span class="${i === selectedCharIndex ? "active" : ""}"></span>`
@@ -186,9 +255,9 @@ function nextCharacter(dir) {
 }
 
 // ===== 목숨 UI =====
-function renderLives(count) {
+function renderLives(count, maxLives = gameState?.maxLives ?? getCharacterMaxLives()) {
   let html = "";
-  for (let i = 0; i < MAX_LIVES; i++) {
+  for (let i = 0; i < maxLives; i++) {
     html += i < count ? "❤️" : "🤍";
   }
   ui.lives.innerHTML = html;
@@ -245,7 +314,9 @@ function startGame() {
   gameState = {
     running: true,
     lane: 1,
-    lives: MAX_LIVES,
+    lives: char.maxLives,
+    maxLives: char.maxLives,
+    verticalHitRange: char.verticalHitRange,
     score: 0,
     vaccines: 0,
     distance: 0,
@@ -264,9 +335,10 @@ function startGame() {
   };
 
   setPlayerImage(char.sprites.run[0]);
+  applyCharacterVisuals(char);
 
   setPlayerLane(1);
-  renderLives(MAX_LIVES);
+  renderLives(char.maxLives, char.maxLives);
   ui.score.textContent = "0";
   ui.vaccines.textContent = "0";
   ui.time.textContent = "0s";
@@ -400,7 +472,7 @@ function takeDamage() {
 function collectVaccine() {
   const now = performance.now();
   gameState.vaccines += 1;
-  gameState.lives = Math.min(gameState.lives + 1, MAX_LIVES);
+  gameState.lives = Math.min(gameState.lives + 1, gameState.maxLives);
   gameState.score += 50;
   setPlayerState("recover", now + RECOVER_ANIM_MS);
   playHeal();
@@ -412,7 +484,7 @@ function collectVaccine() {
 
 function checkCollisions(obj, playerY) {
   if (obj.hit) return;
-  if (Math.abs(obj.y - playerY) > COLLISION_THRESHOLD) return;
+  if (Math.abs(obj.y - playerY) > gameState.verticalHitRange) return;
   if (obj.lane !== gameState.lane) return;
 
   if (obj.type === "virus" && (gameState.playerAction === "jump" || gameState.playerAction === "slide")) {
